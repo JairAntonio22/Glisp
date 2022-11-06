@@ -10,7 +10,7 @@ type Expr struct {
 
 func (e *Expr) String() string {
     if e == nil {
-        return "<nil>"
+        return "nil"
     }
 
     var b strings.Builder

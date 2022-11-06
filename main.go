@@ -3,6 +3,7 @@ package main
 import (
     "bufio"
     "fmt"
+    "log"
     "os"
 
     "./lisp"
@@ -10,7 +11,9 @@ import (
 
 func main() {
     var parser lisp.Parser
+    var context lisp.Context
 
+    logger := log.New(os.Stderr, "Error: ", 0)
     reader := bufio.NewReader(os.Stdin)
 
     for {
@@ -24,7 +27,14 @@ func main() {
         expr, err := parser.ParseExpr(input)
 
         if err != nil {
-            fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+            logger.Println(err)
+            continue
+        }
+
+        expr, err = context.Eval(expr)
+
+        if err != nil {
+            logger.Println(err)
             continue
         }
 

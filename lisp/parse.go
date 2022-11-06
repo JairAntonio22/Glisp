@@ -6,45 +6,6 @@ import (
     "unicode"
 )
 
-func isAtomRune(r rune) bool {
-    return !unicode.IsSpace(r) && !(r == '(' || r == ')')
-}
-
-func tokenize(input string) []string {
-    var tokens []string
-    var b strings.Builder
-    readingAtom := false
-
-    for _, r := range input {
-        if readingAtom {
-            if isAtomRune(r) {
-                b.WriteRune(r)
-            } else {
-                readingAtom = false
-                tokens = append(tokens, b.String())
-                b.Reset()
-
-                if r == '(' {
-                    tokens = append(tokens, "(")
-                } else if r == ')' {
-                    tokens = append(tokens, ")")
-                }
-            }
-        } else {
-            if isAtomRune(r) {
-                readingAtom = true
-                b.WriteRune(r)
-            } else if r == '(' {
-                tokens = append(tokens, "(")
-            } else if r == ')' {
-                tokens = append(tokens, ")")
-            }
-        }
-    }
-
-    return tokens
-}
-
 type Parser struct {
     tokens  []string
     pos     int
@@ -104,4 +65,43 @@ func (p *Parser) parseList() (*Expr, error) {
 
         return &Expr{car: car, cdr: cdr}, nil
     }
+}
+
+func tokenize(input string) []string {
+    var tokens []string
+    var b strings.Builder
+    readingAtom := false
+
+    for _, r := range input {
+        if readingAtom {
+            if isAtomRune(r) {
+                b.WriteRune(r)
+            } else {
+                readingAtom = false
+                tokens = append(tokens, b.String())
+                b.Reset()
+
+                if r == '(' {
+                    tokens = append(tokens, "(")
+                } else if r == ')' {
+                    tokens = append(tokens, ")")
+                }
+            }
+        } else {
+            if isAtomRune(r) {
+                readingAtom = true
+                b.WriteRune(r)
+            } else if r == '(' {
+                tokens = append(tokens, "(")
+            } else if r == ')' {
+                tokens = append(tokens, ")")
+            }
+        }
+    }
+
+    return tokens
+}
+
+func isAtomRune(r rune) bool {
+    return !unicode.IsSpace(r) && !(r == '(' || r == ')')
 }
