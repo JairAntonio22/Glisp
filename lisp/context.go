@@ -2,11 +2,15 @@ package lisp
 
 import (
     "errors"
-    "os"
+    "fmt"
 )
 
 type Context struct {
-    symbols map[string]*Expr
+    atoms map[string]*Expr
+}
+
+func NewContext() *Context {
+    return &Context{atoms: make(map[string]*Expr)}
 }
 
 func (c *Context) Eval(expr *Expr) (*Expr, error) {
@@ -22,7 +26,7 @@ func (c *Context) apply(fn, x *Expr) (*Expr, error) {
         return nil, errors.New("nil is not a procedure")
     }
 
-    if fn.atom != nil {
+    if fn.IsAtom() {
         switch *fn.atom {
         case "car":
             return x.car.car, nil
@@ -34,7 +38,7 @@ func (c *Context) apply(fn, x *Expr) (*Expr, error) {
             return &Expr{car: x.car, cdr: x.cdr}, nil
 
         case "atom?":
-            if x.car.atom != nil {
+            if x.car.IsAtom() {
                 return trueAtom, nil
             } else {
                 return falseAtom, nil
@@ -44,21 +48,55 @@ func (c *Context) apply(fn, x *Expr) (*Expr, error) {
             arg1 := x.car.atom
             arg2 := x.cdr.car.atom
 
-            if arg1 != nil && arg2 != nil {
-                if *arg1 == *arg2 {
-                    return trueAtom, nil
-                } else {
-                    return falseAtom, nil
-                }
-            } else {
-                return nil, errors.New("eq arguments must be atoms")
+            if arg1 == nil || arg2 == nil {
+                return nil, errors.New("eq? arguments must be atoms")
             }
 
-        case "apply":
-            return c.apply(x.car, x.cdr)
+            if *arg1 == *arg2 {
+                return trueAtom, nil
+            } else {
+                return falseAtom, nil
+            }
 
-        case "exit":
-            os.Exit(0)
+        default:
+            eval_fn, err := c.eval(fn)
+
+            if err != nil {
+                return nil, err
+            }
+
+            return c.apply(eval_fn, x)
+        }
+    } else {
+        switch *fn.car.atom {
+        case "lambda":
+            return nil, errors.New("lambda not implemented")
+
+        case "define":
+            return nil, errors.New("define not implemented")
+
+        default:
+            return nil, fmt.Errorf("%s not implemented", *fn.car.atom)
+        }
+    }
+}
+
+func (c *Context) eval(expr *Expr) (*Expr, error) {
+    if expr.IsAtom() {
+        expr_def, exists := c.atoms[*expr.atom]
+
+        if !exists {
+            return nil, fmt.Errorf("%s is not defined", *expr.atom)
+        }
+
+        return expr_def.cdr, nil
+
+    } else if expr.car.IsAtom() {
+        switch *expr.car.atom {
+        case "quote":
+            return expr.cdr.car, nil
+
+        case "cond":
 
         default:
         }

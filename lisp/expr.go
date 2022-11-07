@@ -8,6 +8,10 @@ type Expr struct {
     cdr     *Expr
 }
 
+func (e Expr) IsAtom() bool {
+    return e.atom != nil
+}
+
 func (e *Expr) String() string {
     if e == nil {
         return "nil"
@@ -15,7 +19,7 @@ func (e *Expr) String() string {
 
     var b strings.Builder
 
-    if e.atom != nil {
+    if e.IsAtom() {
         b.WriteString(*e.atom)
     } else {
         b.WriteRune('(')

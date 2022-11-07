@@ -11,10 +11,10 @@ import (
 
 func main() {
     var parser lisp.Parser
-    var context lisp.Context
 
-    logger := log.New(os.Stderr, "Error: ", 0)
     reader := bufio.NewReader(os.Stdin)
+    logger := log.New(os.Stdout, "Error: ", 0)
+    context := lisp.NewContext()
 
     for {
         fmt.Print("> ")
